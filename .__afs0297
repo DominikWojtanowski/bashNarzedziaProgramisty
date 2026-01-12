@@ -5,19 +5,6 @@ GREEN="\e[0;32m"
 YELLOW="\e[0;33m"
 RESET="\e[0m"
 
-interrupt() {
-	echo "czy chcesz zatrzymac program? y/n"
-	read choice
-
-	if [[ "$choice" == "y" ]]; then
-		echo "Wychodzisz z programu"
-		exit 0
-	fi
-
-}
-
-trap interrupt SIGINT
-
 format_time() {
     # TODO: zamień sekundy na MM:SS
     local time_sec=$1
@@ -103,7 +90,7 @@ run_pomodoro() {
 }
 
 run_stoper() {
-    local running=0
+    local running=false
     local sec=0
     echo "1) Start"
     echo "2) Stop"
@@ -111,32 +98,26 @@ run_stoper() {
     echo "4) Exit"
 
     while true; do
-        read -rsn1 -t 0.01 choice
+        read -rsn1 -t 0.1 choice
 	
 
         case $choice in
         1)
-		running=1  	
+		running=true    	
 		;;
         2)
-        	running=0
-		echo -ne "\r\033[K"
-		format_time $sec
+        	running=false
             ;;
         3)
 	    sec=0
-	    echo -ne "\r\033[K"
-	    echo -n "00:00"
-	    echo -ne "\r"
             ;;
         4)
             exit 0
             ;;
         esac
-	if [ "$running" -eq 1 ]; then
-		echo -ne "\r\033[K"
+	echo $running
+	if [[ "$running" -eq 1 ]]; then
 		format_time $sec
-		echo -ne "\r"
 		sleep 1
 		sec=$(( sec + 1))
 	fi

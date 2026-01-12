@@ -5,19 +5,6 @@ GREEN="\e[0;32m"
 YELLOW="\e[0;33m"
 RESET="\e[0m"
 
-interrupt() {
-	echo "czy chcesz zatrzymac program? y/n"
-	read choice
-
-	if [[ "$choice" == "y" ]]; then
-		echo "Wychodzisz z programu"
-		exit 0
-	fi
-
-}
-
-trap interrupt SIGINT
-
 format_time() {
     # TODO: zamień sekundy na MM:SS
     local time_sec=$1
@@ -100,10 +87,14 @@ run_pomodoro() {
 
         cycles=$cycles-1
     done
+    #echo $work
+    #echo $break
+    #echo $cycles
+    # TODO: pętla cykli pomodoro
 }
 
 run_stoper() {
-    local running=0
+    local running=false
     local sec=0
     echo "1) Start"
     echo "2) Stop"
@@ -111,29 +102,9 @@ run_stoper() {
     echo "4) Exit"
 
     while true; do
-        read -rsn1 -t 0.01 choice
-	
-
-        case $choice in
-        1)
-		running=1  	
-		;;
-        2)
-        	running=0
-		echo -ne "\r\033[K"
-		format_time $sec
-            ;;
-        3)
-	    sec=0
-	    echo -ne "\r\033[K"
-	    echo -n "00:00"
-	    echo -ne "\r"
-            ;;
-        4)
-            exit 0
-            ;;
-        esac
-	if [ "$running" -eq 1 ]; then
+        read -rsn1 -t 0.1 choice
+	local timeRunning=true
+	if [[ $timeRunning=true ]]; then
 		echo -ne "\r\033[K"
 		format_time $sec
 		echo -ne "\r"
@@ -141,8 +112,33 @@ run_stoper() {
 		sec=$(( sec + 1))
 	fi
 
+
+        case $choice in
+        1)
+		timeRunning=true    	
+		;;
+        2)
+        	timeRunning=false
+            ;;
+        3)
+	    args[1]=0
+            ;;
+        4)
+            exit 0
+            ;;
+        esac
     done
-	
+}
+constant_time() {
+	local timeRunning=true
+	while $timeRunning; do
+		echo -ne "\r\033[K"
+		format_time ${args[1]}
+		echo -ne "\r"
+		sleep 1
+		args[1]=$(( args[1] + 1 ))
+	done
+
 }
 test_variables() {
 local re='^[0-9]+$'

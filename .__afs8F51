@@ -11,7 +11,6 @@ interrupt() {
 
 	if [[ "$choice" == "y" ]]; then
 		echo "Wychodzisz z programu"
-		exit 0
 	fi
 
 }
